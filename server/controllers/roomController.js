@@ -39,17 +39,7 @@ export const createRoom = async (req, res) => {
 // GET /api/rooms
 export const getRooms = async (req, res) => {
   try {
-    const { userId } = req.auth;
-    let user;
-    let excludedHotels;
-    let excludedHotelIds;
-    let rooms;
-    if(userId) {
-      user = await User.findById(userId);
-      excludedHotels = await Hotel.find({ owner: userId }).select("_id");
-      excludedHotelIds = excludedHotels.map(hotel => hotel._id);
-      rooms = await Room.find({ isAvailable: true ,
-  hotel: { $nin: excludedHotelIds } })
+      const rooms = await Room.find({ isAvailable: true ,})
       .populate({
         path: 'hotel',
         populate: {
@@ -58,18 +48,6 @@ export const getRooms = async (req, res) => {
         },
       }).sort({ createdAt: -1 });
     res.json({ success: true, rooms });
-    }
-    else{
-      rooms = await Room.find({ isAvailable: true ,})
-      .populate({
-        path: 'hotel',
-        populate: {
-          path: 'owner', 
-          select: 'image',
-        },
-      }).sort({ createdAt: -1 });
-    res.json({ success: true, rooms });
-    }
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
